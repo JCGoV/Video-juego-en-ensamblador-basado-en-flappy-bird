@@ -1,0 +1,336 @@
+INICIO MACRO
+	push ds
+	sub ax,ax
+	push ax
+	MOV AX,SEG DATASG
+	MOV DS,AX
+ENDM
+
+;---------------------------
+INICIO2 MACRO
+	push ds
+	sub ax,ax
+	push ax
+	MOV AX,@DATA
+	MOV DS,AX
+ENDM
+
+;-------------------
+LEER_CAR MACRO
+	MOV AH,01	;Deja el caracter leído en al
+	INT 21h
+ENDM
+
+;---------------------------
+
+ESCRIBIR_CAR MACRO
+	PUSH AX
+	MOV AH,02	;Caracter a desplegar almacenado en dl
+	INT 21h
+	POP AX
+ENDM
+
+;----------------------------
+
+READ_KEY MACRO
+	PUSH AX
+	MOV AH,07	;Caracter a desplegar almacenado en dl
+	INT 21h
+	POP AX
+ENDM
+
+;----------------------------
+
+RASTREAR MACRO
+	MOV AH,10H
+	INT 16H
+	CMP AL,00H
+	JE RASTREA1
+	CMP AL,0E0H
+	JE RASTREA1
+ENDM
+
+;---------------------------
+
+MENSAJE MACRO
+	PUSH AX
+	MOV AH,09 ; La direccion se almacena en el registro Dx
+	INT 21H
+	POP AX
+ENDM
+
+
+
+;---------------------------
+
+LIMPIAR_PANTALLA MACRO
+	PUSH AX
+	PUSH BX
+	PUSH CX
+	PUSH DX
+	MOV AX,0600h
+	MOV BH,71h ; FONDO BLANCO CON PRIMER PLANO AZUL
+	MOV CX,0000h
+	MOV DX,1D4Fh
+	INT 10H
+	POP DX
+	POP CX
+	POP BX
+	POP AX
+ENDM
+
+;---------------------------------------------------------------
+
+Desempaqueta MACRO
+	Push dx
+	Push cx
+	Mov dh,dl	; Guardando el valor original en DH
+	Mov cl,4
+	Shr dl,cl	; Cuatro corrimientos a la derecha
+	CALL Binario_Ascii
+	Escribe_car
+	Mov dl,dh	; Recuperando el dato de DH
+	And dl,0Fh	; Aplicando mascara
+	CALL Binario_ascii
+	Escribe_car
+	Pop cx
+	Pop dx
+ENDM
+
+;---------------------------------------------------------------
+Empaqueta MACRO
+	Push cx
+	LEER_CAR	; Leer el primera car
+	Call ascii_binario	;Procesa 1er. caracter
+	Mov cl,04
+	Shl al,cl	; Instrucción lógica de corrimiento a la izquierda 
+	Mov ch,al	; Almacenando el valor de AL a un registro auxiliar
+	LEER_CAR	; Leer el segundo car
+	Call ascii_binario	;Procesa 2o. caracter
+	Add al,ch	; Sumar  el contenido de los registros
+	Pop cx
+ENDM
+
+;------------------------------
+
+escribe_car MACRO
+ PUSH AX
+ MOV AH,02 	; Caracter a desplegar almacenado en dl
+ INT 21h
+ POP AX
+ ENDM
+
+;------------------------------------------------------------------
+
+LEE MACRO
+MOV AH,01
+INT 21H
+ENDM
+
+;-------------------------------------------------
+
+PARIDAD MACRO
+	MOV SI,0
+	MOV BL,2
+	MOV CX,0
+PARES:
+	CMP SI, 5
+	JGE FIN2
+	MOV AH,0
+	MOV AL,VECTOR_A[SI]
+	DIV BL
+	CMP AH,0
+	JE PAR
+	JMP IMPAR
+PAR:MOV DL,01
+	MOV VECTOR_B[SI],DL
+	DESEMPAQUETA
+	INC SI
+	JMP PARES
+IMPAR:MOV DL,02
+	MOV VECTOR_B[SI],DL
+	DESEMPAQUETA
+	INC SI
+	JMP PARES
+FIN2:
+ENDM
+;-------------------------------------------------------------
+PRODUCT MACRO
+	MOV SI,0
+PRODUCTO:
+	MOV AL, VECTOR_A[SI]
+	MOV BH, VECTOR_B[SI]
+	MUL BH
+	MOV VECTOR_C[SI], AL
+	MOV DL,AL
+	DESEMPAQUETA
+	INC SI
+	CMP SI,5
+	JLE PRODUCTO
+ENDM
+ 
+;--------------------------------
+
+M_M MACRO
+		MOV SI,0
+	MOV AL,MATRIZ[SI]
+	MOV MAYOR,AL
+	MOV MENOR,AL
+
+	LEA DX,MEN
+	MENSAJE
+
+	EMPAQUETA
+	MOV FILAS,AL
+	SUB RESTO,AL
+
+	LEA DX,SALTA
+	MENSAJE
+
+	EMPAQUETA
+	MOV COLUMNAS,AL
+
+	LEA DX, SALTA
+	MENSAJE
+
+CICLOF:
+	MOV DL, MATRIZ[SI]
+	;DESEMPAQUETA
+	CMP MAYOR, DL
+	JG MAYOR_M
+MENOR_0:	 
+	CMP MENOR,DL
+	JL MENOR1
+F1:
+	INC SI
+	INC CONTF
+
+	MOV AL,FILAS
+	CMP CONTF,AL
+	JGE CICLOC
+	JMP CICLOF
+
+
+CICLOC:
+	;LEA DX,SALTA
+	;MENSAJE
+
+	MOV CONTF,00
+
+	MOV AH,00
+	MOV AL,RESTO
+	ADD SI,AX
+	INC CONTC
+
+	MOV AL,COLUMNAS
+	CMP CONTC,AL
+	JGE MOSTRAR
+	JMP CICLOF
+
+
+MAYOR_M: 
+		MOV MAYOR,DL
+		JMP MENOR_0
+MENOR1:
+		MOV MENOR,DL
+		JMP F1
+
+MOSTRAR: 
+
+	MOV DL,MAYOR
+	DESEMPAQUETA
+	
+	LEA DX,SALTA
+	MENSAJE
+
+	MOV DL,MENOR
+	DESEMPAQUETA
+
+
+ENDM
+
+
+;---------------------
+
+TRES_1 MACRO
+
+MOV BX,0
+	MOV SI,0
+TRES1:CMP SI,05H
+	JGE CL41	
+
+	MOV AL,VECTOR_A[SI]
+	CMP AL,0
+	JGE MAYOR1
+
+TRES2:	
+	MOV AL,VECTOR_B[SI]
+	INC SI
+	CMP AL,0
+	JGE MAYOR2
+
+	JMP TRES1
+
+MAYOR1:
+	MOV VECTOR_C[BX],AL
+	MOV DL,AL
+	DESEMPAQUETA
+	INC CONT
+	INC BX
+	JMP TRES2
+
+MAYOR2:
+	MOV VECTOR_C[BX],AL
+	MOV DL,AL
+	DESEMPAQUETA
+	INC CONT
+	INC BX
+	JMP TRES1
+
+CL41:
+	CMP CONT,0Ah
+	JL CL42
+	;READ_KEY
+	JMP FIN1
+CL42:
+	MOV DL,10D
+	MOV VECTOR_C[BX],DL
+	DESEMPAQUETA
+	;MOV DL,CONT
+	;DESEMPAQUETA
+	INC BX
+	INC CONT
+	JMP CL41
+FIN1:
+
+ENDM
+
+
+Posiciona_cursor MACRO
+	PUSH AX
+	PUSH BX
+	PUSH DX
+	MOV AH,02h
+	MOV BH,0
+	MOV DH,02h
+	MOV DL,40h
+	INT 10H
+	POP DX
+	POP BX
+	POP AX
+ENDM
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,179 @@
+PAR1 MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV AX,0600h
+    MOV BH,03h 
+    
+    MOV CH,00  ;FILAS
+    MOV CL,X1  ;COLUMNAS
+    MOV DH,03H ;FILAS
+    ADD X1,05H
+    MOV DL,X1 ;COLUMNAS
+    SUB X1,05H
+    INT 10H
+;---------------------
+    MOV CH,08H  ;FILAS
+    MOV DH,1DH ;FILAS
+    INT 10H 
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+PAR2 MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV AX,0600h
+    MOV BH,03h 
+    
+    MOV CH,00  ;FILAS
+    MOV CL,X2  ;COLUMNAS
+    MOV DH,07H ;FILAS
+    ADD X2,05H
+    MOV DL,X2 ;COLUMNAS
+    SUB X2,05H
+    INT 10H
+;---------------------
+    MOV CH,0CH  ;FILAS
+    MOV DH,1DH ;FILAS
+    INT 10H 
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+PAR3 MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV AX,0600h
+    MOV BH,03h 
+    
+    MOV CH,00  ;FILAS
+    MOV CL,X3  ;COLUMNAS
+    MOV DH,0AH ;FILAS
+    ADD X3,05H
+    MOV DL,X3 ;COLUMNAS
+    SUB X3,05H
+    INT 10H
+;---------------------
+    MOV CH,0FH  ;FILAS
+    MOV DH,1DH ;FILAS
+    INT 10H 
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+PAR4 MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV AX,0600h
+    MOV BH,03h 
+    
+    MOV CH,00  ;FILAS
+    MOV CL,X4  ;COLUMNAS
+    MOV DH,0FH ;FILAS
+    ADD X4,15H
+    MOV DL,X4 ;COLUMNAS
+    SUB X4,05H
+    INT 10H
+;---------------------
+    MOV CH,0EH  ;FILAS
+    MOV DH,1DH ;FILAS
+    INT 10H 
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+PAR5 MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+    MOV AX,0600h
+    MOV BH,03h 
+    
+    MOV CH,00  ;FILAS
+    MOV CL,X5  ;COLUMNAS
+    MOV DH,15H ;FILAS
+    ADD X5,05H
+    MOV DL,X5 ;COLUMNAS
+    SUB X5,05H
+    INT 10H
+;---------------------
+    MOV CH,1AH  ;FILAS
+    MOV DH,1DH ;FILAS
+    INT 10H 
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+
+
+
+ANGRY MACRO
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
+
+    MOV AX,0600h
+    MOV BH,04h 
+    MOV BL,YB
+    
+    MOV CH,BL  ;FILAS
+    MOV CL,0AH  ;COLUMNAS
+    MOV DH,BL+1 ;FILAS
+    MOV DL,0CH ;COLUMNAS
+    INT 10H
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+ENDM
+
+;---------------------------------
+
+MOSTRAR_SCORE MACRO
+    MOV AH,SCORE2
+
+    MOV AL,SCORE
+
+    ADD AL,1
+    AAA
+    MOV SCORE,AL
+    MOV SCORE2,AH
+    
+    MOV DL,AH
+    ADD DL,30H
+    ESCRIBIR_CAR
+
+    MOV DL, AL
+    ADD DL,30H
+    ESCRIBIR_CAR
+
+    LEA DX, SALTA
+    MENSAJE
+
+ENDM
